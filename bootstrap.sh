@@ -37,7 +37,7 @@ kubectl rollout status statefulset/mysql -n mysql --timeout=5m
 # 4. Create application resources
 print_section "Creating Application Secrets and ConfigMaps"
 kubectl apply -f ./.infrastructure/secret.yml
-kubectl apply -f ./.infrastructure/confgiMap.yml
+kubectl apply -f ./.infrastructure/configMap.yml
 
 print_section "Creating Persistent Volumes and Claims"
 kubectl apply -f ./.infrastructure/pv.yml
