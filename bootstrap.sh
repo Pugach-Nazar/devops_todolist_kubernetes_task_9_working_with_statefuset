@@ -2,8 +2,6 @@
 
 set -e
 
-echo "Starting Kubernetes cluster deployment..."
-
 # Color codes for output
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
@@ -13,6 +11,15 @@ NC='\033[0m' # No Color
 print_section() {
     echo -e "\n${BLUE}=== $1 ===${NC}\n"
 }
+
+# 0. Create Kubernetes cluster with kind
+print_section "Creating Kubernetes Cluster with kind"
+kind create cluster --config=./cluster.yml --name=todoapp-cluster || echo "Cluster already exists or failed to create"
+
+echo "Waiting for cluster to be ready..."
+sleep 10
+
+echo "Starting Kubernetes cluster deployment..."
 
 # 1. Create namespaces
 print_section "Creating Namespaces"
