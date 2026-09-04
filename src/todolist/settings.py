@@ -61,21 +61,33 @@ WSGI_APPLICATION = "todolist.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
-    }
+# Read database configuration from environment variables (from Kubernetes Secrets)
+DB_ENGINE = os.environ.get("DB_ENGINE", "django.db.backends.sqlite3")
+DB_HOST = os.environ.get("DB_HOST", None)
+DB_PORT = os.environ.get("DB_PORT", "3306")
+DB_NAME = os.environ.get("DB_NAME", None)
+DB_USER = os.environ.get("DB_USER", None)
+DB_PASSWORD = os.environ.get("DB_PASSWORD", None)
 
-    # "default": {
-    #     "ENGINE": "django.db.backends.mysql",
-    #     "HOST": "FVFFM3F5Q05N", 
-    #     "PORT": 3306,
-    #     "NAME":"tododb",
-    #     "PASSWORD": "my-secret-pw", 
-    #     "USER": "root",
-    # }
-}
+# Use MySQL if all required environment variables are set, otherwise use SQLite3
+if DB_ENGINE == "django.db.backends.mysql" and all([DB_HOST, DB_NAME, DB_USER, DB_PASSWORD]):
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.mysql",
+            "HOST": DB_HOST,
+            "PORT": int(DB_PORT),
+            "NAME": DB_NAME,
+            "USER": DB_USER,
+            "PASSWORD": DB_PASSWORD,
+        }
+    }
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
+        }
+    }
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.7/topics/i18n/

@@ -47,6 +47,30 @@ spec:
             secretKeyRef:
               name: app-secret
               key: SECRET_KEY
+        - name: DB_ENGINE
+          value: "django.db.backends.mysql"
+        - name: DB_HOST
+          valueFrom:
+            secretKeyRef:
+              name: app-secret
+              key: HOST
+        - name: DB_PORT
+          value: "3306"
+        - name: DB_NAME
+          valueFrom:
+            secretKeyRef:
+              name: app-secret
+              key: NAME
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: app-secret
+              key: USER
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: app-secret
+              key: PASSWORD
         ports:
         - containerPort: 8080
         livenessProbe:

@@ -1,0 +1,88 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysql
+  namespace: mysql
+spec:
+  serviceName: mysql
+  replicas: 3
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      terminationGracePeriodSeconds: 30
+      containers:
+      - name: mysql
+        image: mysql:8.0
+        ports:
+        - name: mysql
+          containerPort: 3306
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: MYSQL_ROOT_PASSWORD
+        - name: MYSQL_DATABASE
+          value: tododb
+        - name: MYSQL_USER
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: MYSQL_USER
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: MYSQL_PASSWORD
+        resources:
+          requests:
+            cpu: 250m
+            memory: 512Mi
+          limits:
+            cpu: 500m
+            memory: 1Gi
+        livenessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - mysqladmin ping -h 127.0.0.1 -uroot -p"$MYSQL_ROOT_PASSWORD"
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 6
+        readinessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - mysqladmin ping -h 127.0.0.1 -uroot -p"$MYSQL_ROOT_PASSWORD"
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 5
+          failureThreshold: 6
+        volumeMounts:
+        - name: mysql-data
+          mountPath: /var/lib/mysql
+        - name: mysql-init
+          mountPath: /docker-entrypoint-initdb.d/init.sql
+          subPath: init.sql
+          readOnly: true
+      volumes:
+      - name: mysql-init
+        configMap:
+          name: mysql-init
+  volumeClaimTemplates:
+  - metadata:
+      name: mysql-data
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 1Gi
